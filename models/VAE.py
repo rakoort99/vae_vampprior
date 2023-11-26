@@ -227,11 +227,13 @@ class VAE(Model):
 
         elif self.args.prior in ['vampprior_data', 'mbap_prior', 'clust_kmeans', 'clust_db']:
             # z - MB x M
-            # C = self.args.number_components
+            C = self.args.number_components
             
             # get prechosen data points
             X = self.p_loaded
-            C = X.shape[0]
+            # print(X.shape)
+            if self.args.prior == 'clust_db':
+                C = X.shape[0]
 
             # calculate params for given data
             z_p_mean, z_p_logvar = self.q_z(X)  # C x M
