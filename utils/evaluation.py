@@ -72,6 +72,9 @@ def evaluate_vae(args, model, train_loader, data_loader, epoch, dir, mode):
 
         # print(model.means(model.idle_input))
 
+        # Calculate active units
+        z1_active, z2_active = model.calc_active(test_data)
+
         # VISUALIZATION: plot real images
         plot_images(args, test_data.data.cpu().numpy()[0:25], dir, 'real', size_x=5, size_y=5)
 
@@ -117,7 +120,7 @@ def evaluate_vae(args, model, train_loader, data_loader, epoch, dir, mode):
         print('Train log_likelihood value {:.2f} in time: {:.2f}s'.format(log_likelihood_train, t_ll_e - t_ll_s))
 
         # VISUALIZE variational posterior plot on test data
-        qz_pca_scatter(model.q_z_layers(test_data), test_target, dir, mode)
+        qz_pca_scatter(model, test_data, test_target, dir, mode)
 
 
         
@@ -128,6 +131,6 @@ def evaluate_vae(args, model, train_loader, data_loader, epoch, dir, mode):
     evaluate_re /= len(data_loader)  # re already averages over batch size
     evaluate_kl /= len(data_loader)  # kl already averages over batch size
     if mode == 'test':
-        return evaluate_loss, evaluate_re, evaluate_kl, log_likelihood_test, log_likelihood_train, elbo_test, elbo_train
+        return evaluate_loss, evaluate_re, evaluate_kl, log_likelihood_test, log_likelihood_train, elbo_test, elbo_train, z1_active, z2_active
     else:
         return evaluate_loss, evaluate_re, evaluate_kl

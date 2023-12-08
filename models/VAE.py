@@ -24,7 +24,7 @@ from models.Model import Model
 class VAE(Model):
     def __init__(self, args):
         super(VAE, self).__init__(args)
-
+    
         # encoder: q(z | x)
         self.q_z_layers = nn.Sequential(
             GatedDense(np.prod(self.args.input_size), 300),
@@ -165,7 +165,7 @@ class VAE(Model):
             z_sample_rand = self.reparameterize(z_sample_gen_mean, z_sample_gen_logvar)
 
         elif self.args.prior in ['vampprior_data', 'mbap_prior', 'clust_db', 'clust_kmeans']:
-            z_sample_gen_mean, z_sample_gen_logvar = self.q_z(self.p_loaded)
+            z_sample_gen_mean, z_sample_gen_logvar = self.q_z(self.p_loaded[0:N])
             z_sample_rand = self.reparameterize(z_sample_gen_mean, z_sample_gen_logvar)
 
         samples_rand, _ = self.p_x(z_sample_rand)
@@ -197,6 +197,7 @@ class VAE(Model):
 
     # set prior inputs
     def set_p_data(self, X):
+        print(X.shape)
         self.p_loaded = X
 
     # the prior
@@ -263,3 +264,18 @@ class VAE(Model):
         x_mean, x_logvar = self.p_x(z_q)
 
         return x_mean, x_logvar, z_q, z_q_mean, z_q_logvar
+    
+    def calc_active(self, x, gate = 10**-2):
+        z1 = self.q_z_layers[0](x)
+        active_z1 = (z1.var(0) > gate).sum()
+
+        z1final = self.q_z_mean(z1)
+        active_z1final = (z1final.var(0) > gate).sum()
+
+        z2 = self.q_z_layers[1](z1)
+        active_z2 = (z2.var(0) > gate).sum()
+
+        z2final = self.q_z_mean(z2)
+        active_z2final = (z2final.var(0) > gate).sum()
+        return active_z1, active_z2, active_z1final, active_z2final
+

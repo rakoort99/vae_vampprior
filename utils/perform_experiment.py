@@ -28,14 +28,19 @@ def experiment_vae(args, train_loader, val_loader, test_loader, p_loader, model,
 
     time_history = []
 
+    device = torch.device('cpu')
+    if args.cuda:
+        device = torch.device('cuda')
+    
     for epoch in range(1, args.epochs + 1):
         time_start = time.time()
-        model, train_loss_epoch, train_re_epoch, train_kl_epoch = train(epoch, args, train_loader, p_loader, model,
+        model, train_loss_epoch, train_re_epoch, train_kl_epoch = train(epoch, args, train_loader, p_loader, model.to(device),
                                                                              optimizer)
-
-        val_loss_epoch, val_re_epoch, val_kl_epoch = evaluate(args, model, train_loader, val_loader, epoch, dir, mode='validation')
+        time_mid = time.time()
+        # print(f'training time: {time_mid - time_start:.2f}')
+        val_loss_epoch, val_re_epoch, val_kl_epoch = evaluate(args, model.to(device), train_loader, val_loader, epoch, dir, mode='validation')
         time_end = time.time()
-
+        # print(f'evaluation time: {time_end - time_mid :.2f}')
         time_elapsed = time_end - time_start
 
         # appending history
@@ -79,7 +84,7 @@ def experiment_vae(args, train_loader, val_loader, test_loader, p_loader, model,
 
     # FINAL EVALUATION
     best_model = torch.load(dir + args.model_name + '.model')
-    test_loss, test_re, test_kl, test_log_likelihood, train_log_likelihood, test_elbo, train_elbo = evaluate(args, best_model, train_loader, test_loader, 9999, dir, mode='test')
+    test_loss, test_re, test_kl, test_log_likelihood, train_log_likelihood, test_elbo, train_elbo, z1_a, z2_a = evaluate(args, best_model.to(device), train_loader, test_loader, 9999, dir, mode='test')
 
     print('FINAL EVALUATION ON TEST SET\n'
           'LogL (TEST): {:.2f}\n'
@@ -128,3 +133,6 @@ def experiment_vae(args, train_loader, val_loader, test_loader, p_loader, model,
     torch.save(test_re, dir + args.model_name + '.test_re')
     torch.save(test_kl, dir + args.model_name + '.test_kl')
     torch.save(total_train_time, dir + args.model_name + '.train_time' )
+    torch.save(epoch, dir + args.model_name + '.n_epochs')
+    torch.save(z1_a, dir + args.model_name + '.active_z1')
+    torch.save(z2_a, dir + args.model_name + '.active_z2')

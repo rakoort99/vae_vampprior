@@ -43,9 +43,9 @@ parser.add_argument('--no-cuda', action='store_true', default=False,
 parser.add_argument('--seed', type=int, default=14, metavar='S',
                     help='random seed (default: 14)')
 # model: latent size, input_size, so on
-parser.add_argument('--z1_size', type=int, default=40, metavar='M1',
+parser.add_argument('--z1_size', type=int, default=100, metavar='M1',
                     help='latent size')
-parser.add_argument('--z2_size', type=int, default=40, metavar='M2',
+parser.add_argument('--z2_size', type=int, default=50, metavar='M2',
                     help='latent size')
 parser.add_argument('--input_size', type=int, default=[1, 28, 28], metavar='D',
                     help='input size')
@@ -64,8 +64,8 @@ parser.add_argument('--use_training_data_init', action='store_true', default=Fal
                     help='initialize pseudo-inputs with randomly chosen training data')
 
 # model: model name, prior
-parser.add_argument('--model_name', type=str, default='vae', metavar='MN',
-                    help='model name: vae, hvae_2level, convhvae_2level, pixelhvae_2level')
+parser.add_argument('--model_name', type=str, default='vae_2level', metavar='MN',
+                    help='model name: vae, vae_2level, hvae_2level, convhvae_2level, pixelhvae_2level')
 
 parser.add_argument('--prior', type=str, default='vampprior', metavar='P',
                     help='prior: standard, vampprior, vampprior_data, mbap_prior, clust_db, clust_kmeans')
@@ -83,7 +83,7 @@ parser.add_argument('--MB', type=int, default=100, metavar='MBLL',
                     help='size of a mini-batch used for approximating log-likelihood')
 
 # dataset
-parser.add_argument('--dataset_name', type=str, default='freyfaces', metavar='DN',
+parser.add_argument('--dataset_name', type=str, default='static_mnist', metavar='DN',
                     help='name of the dataset: static_mnist, dynamic_mnist, omniglot, caltech101silhouettes, histopathologyGray, freyfaces, cifar10')
 
 parser.add_argument('--dynamic_binarization', action='store_true', default=False,
@@ -126,6 +126,8 @@ def run(args, kwargs):
     # importing model
     if args.model_name == 'vae':
         from models.VAE import VAE
+    elif args.model_name == 'vae_2level':
+        from models.VAE_2level import VAE
     elif args.model_name == 'hvae_2level':
         from models.HVAE_2level import VAE
     elif args.model_name == 'convhvae_2level':

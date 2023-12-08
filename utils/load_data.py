@@ -53,15 +53,23 @@ def load_static_mnist(args, **kwargs):
         from sklearn.cluster import DBSCAN
         p_loader = torch.from_numpy(DBSCAN(args.DB_eps, metric='hamming').fit(x_train).components_)
         print("clustering successful, shape", p_loader.shape)
-        if p_loader.shape[0] > args.number_components*10 or p_loader.shape[0] < args.number_components*10:
-            raise Exception("Number of components too different from ")
+        if p_loader.shape[0] > args.number_components*10 or p_loader.shape[0] < args.number_components/10:
+            raise Warning("Number of components too different from intended component count")
     elif args.prior == 'clust_kmeans':
         print('if statement: clust_kmeans')
         print('prior inputted:', args.prior)
         print("Generating KMeans cluster center prior")
         from sklearn.cluster import KMeans
-        p_loader = torch.from_numpy(KMeans(args.number_components, n_init='auto').fit(x_train).cluster_centers_)
-        print("clustering successful, shape", p_loader.shape)
+        P_X = torch.from_numpy(KMeans(args.number_components, n_init='auto').fit(x_train).cluster_centers_)
+
+        # gotta make it play nice for bernoulli
+        P_X = torch.where(P_X < 0.001, 0.001, P_X)
+        P_X = torch.where(P_X > 0.999, 0.999, P_X)
+        P_Y = torch.from_numpy(np.zeros((args.number_components, 1) ))
+
+        p_data = data_utils.TensorDataset(P_X, P_Y)
+        p_loader = data_utils.DataLoader(p_data, batch_size=args.number_components, shuffle=True, **kwargs)
+        print("clustering successful")
     else:
         p_loader = None
 
