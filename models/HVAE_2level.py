@@ -4,7 +4,7 @@ import numpy as np
 
 import math
 
-from scipy.misc import logsumexp
+from scipy.special import logsumexp
 
 import torch
 import torch.utils.data
@@ -16,9 +16,8 @@ from utils.distributions import log_Bernoulli, log_Normal_diag, log_Normal_stand
 from utils.visual_evaluation import plot_histogram
 from utils.nn import he_init, GatedDense, NonLinear
 
-from Model import Model
+from models.Model import Model
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
 #=======================================================================================================================
 class VAE(Model):
     def __init__(self, args):
@@ -172,9 +171,9 @@ class VAE(Model):
 
             loss, RE, KL = self.calculate_loss(x, average=True)
 
-            RE_all += RE.cpu().data[0]
-            KL_all += KL.cpu().data[0]
-            lower_bound += loss.cpu().data[0]
+            RE_all += RE.cpu().item()
+            KL_all += KL.cpu().item()
+            lower_bound += loss.cpu().item()
 
         lower_bound /= I
 
@@ -294,3 +293,9 @@ class VAE(Model):
         x_mean, x_logvar = self.p_x(z1_q, z2_q)
 
         return x_mean, x_logvar, z1_q, z1_q_mean, z1_q_logvar, z2_q, z2_q_mean, z2_q_logvar, z1_p_mean, z1_p_logvar
+    
+    def calc_active(self, x, gate = 0.01):
+        x_mean, x_logvar, z1_q, z1_q_mean, z1_q_logvar, z2_q, z2_q_mean, z2_q_logvar, z1_p_mean, z1_p_logvar = self.forward(x)
+        active_z1 = (z1_q_mean.var(0) > gate).sum()
+        active_z2 = (z2_q_mean.var(0) > gate).sum()
+        return active_z1, active_z2

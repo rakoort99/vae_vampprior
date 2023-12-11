@@ -1,4 +1,16 @@
 # VAE with a VampPrior
+## Here's what I did:
+
+1. added 2-layer VAE
+2. added several 'new' priors. MBAP, KMeans cluster center, DBSCAN cluster exemplar (don't do this), and VampPrior *data*. 
+   1. this required altering how data is loaded, creating new model attributes, and changing the training process to be individualized for each type of model. 
+3. updated some code to run on modern pytorch. this wasn't necessary but was fun
+4. added new model evaluation steps, such as histograms of posterior data in PCA space and active unit evaluation
+5. learned a lot about pytorch. part of why I picked this project was so that I can learn to read and work with a real pytorch project, rather than sanitized, uncomplicated sample and tutorial code. 
+
+
+
+## Below this point is work from the original paper
 This is a PyTorch implementation of a new prior ("Variational Mixture of Posteriors" prior, or VampPrior for short) for the variational auto-encoder framework with one layer and two layers of stochastic hidden units as described in the following paper:
 * Jakub M. Tomczak, Max Welling, VAE with a VampPrior, [arXiv preprint](https://arxiv.org/abs/1705.07120), 2017
 

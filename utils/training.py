@@ -5,6 +5,13 @@ from torch.autograd import Variable
 import time
 
 import numpy as np
+
+from itertools import cycle, zip_longest
+
+def zip_cycle(*iterables, empty_default=None):
+    cycles = [cycle(i) for i in iterables]
+    for _ in zip_longest(*iterables):
+        yield tuple(next(i, empty_default) for i in cycles)
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 # ======================================================================================================================
@@ -31,7 +38,7 @@ def train_vae(epoch, args, train_loader, p_loader, model, optimizer):
             beta = 1.
     print('beta: {}'.format(beta))
     if args.prior in ['mbap_prior', 'vampprior_data']:
-        for batch_idx, ((data, target), (p_data, p_target)) in enumerate(zip(train_loader, p_loader)):
+        for batch_idx, ((data, target), (p_data, p_target)) in enumerate(zip_cycle(train_loader, p_loader)):
             if args.cuda:
                 data, target = data.cuda(), target.cuda() 
                 p_data = p_data.cuda()

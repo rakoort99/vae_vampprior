@@ -322,15 +322,14 @@ class VAE(Model):
 
         return x_mean, x_logvar, z1_q, z1_q_mean, z1_q_logvar, z2_q, z2_q_mean, z2_q_logvar, z1_p_mean, z1_p_logvar, z1_p
 
-    def calc_active(self, x, gate = 10**-2):
+    def calc_active(self, x, gate = 0.01):
         # z1 ~ q(z1 | x)
         z1_q_mean, z1_q_logvar = self.q_z1(x)
         z1_q = self.reparameterize(z1_q_mean, z1_q_logvar)
 
         # z2 ~ q(z2 | x, z1)
-        z2_q_mean, z2_q_logvar = self.q_z2(z1_q)
-        z2_q = self.reparameterize(z2_q_mean, z2_q_logvar)
+        z2_q_mean, _ = self.q_z2(z1_q)
 
-        active_z1 = (z1_q.var(0) > gate).sum()
-        active_z2 = (z2_q.var(0) > gate).sum()
+        active_z1 = (z1_q_mean.var(0) > gate).sum()
+        active_z2 = (z2_q_mean.var(0) > gate).sum()
         return active_z1, active_z2
